@@ -1,0 +1,24 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    libmagic1 \
+    poppler-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Copy dependency files and source
+COPY pyproject.toml ./
+COPY worker ./worker
+
+# Install dependencies
+RUN uv pip install --system ".[dev]"
+
+# Run the worker
+CMD ["python", "-m", "worker.main"]

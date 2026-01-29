@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: screening_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-screening}
+      MYSQL_USER: ${MYSQL_USER:-screening_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-screening_pass}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - screening_net
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: screening_api
+    environment:
+      - DATABASE_URL=mysql+asyncmy://${MYSQL_USER:-screening_user}:${MYSQL_PASSWORD:-screening_pass}@db:3306/${MYSQL_DATABASE:-screening}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - STORAGE_PATH=/storage
+      - DEBUG=${DEBUG:-false}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./storage:/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - screening_net
+
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: screening_worker
+    environment:
+      - DATABASE_URL=mysql+asyncmy://${MYSQL_USER:-screening_user}:${MYSQL_PASSWORD:-screening_pass}@db:3306/${MYSQL_DATABASE:-screening}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - STORAGE_PATH=/storage
+      - POLL_INTERVAL=${POLL_INTERVAL:-5}
+    volumes:
+      - ./worker:/app
+      - ./storage:/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - screening_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: screening_frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - api
+    networks:
+      - screening_net
+
+volumes:
+  mysql_data:
+
+networks:
+  screening_net:
+    driver: bridge
