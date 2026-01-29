@@ -5,6 +5,12 @@ import { Sidebar } from '@/components/Sidebar'
 export const metadata: Metadata = {
   title: 'Talent Insight | AI採用スクリーニング',
   description: 'AIによる書類選考の前処理を自動化し、採用担当者の意思決定を支援',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-touch-icon.svg',
+  },
 }
 
 export default function RootLayout({

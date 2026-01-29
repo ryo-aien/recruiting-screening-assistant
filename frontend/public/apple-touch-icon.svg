@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="appleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb"/>
+      <stop offset="50%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#60a5fa"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="40" fill="#0a0a0f"/>
+  <g transform="translate(34, 34)" stroke="url(#appleGrad)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M56 5.6L5.6 30.8l50.4 25.2 50.4-25.2L56 5.6z"/>
+    <path d="M5.6 81.2l50.4 25.2 50.4-25.2"/>
+    <path d="M5.6 56l50.4 25.2 50.4-25.2"/>
+  </g>
+</svg>
