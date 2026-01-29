@@ -14,6 +14,7 @@ class Settings(BaseSettings):
 
     # Storage
     storage_path: str = "/storage"
+    gcs_bucket: str | None = None  # Cloud Storage bucket name for GCP deployment
 
     # Application
     debug: bool = False
