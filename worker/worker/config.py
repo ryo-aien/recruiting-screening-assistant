@@ -14,7 +14,6 @@ class Settings(BaseSettings):
 
     # Storage
     storage_path: str = "/storage"
-    gcs_bucket: str | None = None  # Cloud Storage bucket name for GCP deployment
 
     # Worker settings
     poll_interval: int = 5  # seconds

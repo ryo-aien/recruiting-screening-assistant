@@ -1,6 +1,5 @@
 import os
 import uuid
-from abc import ABC, abstractmethod
 from pathlib import Path
 
 import aiofiles
@@ -10,35 +9,7 @@ from app.config import get_settings
 settings = get_settings()
 
 
-class BaseStorageService(ABC):
-    """Abstract base class for storage services."""
-
-    @abstractmethod
-    async def save_raw_file(self, content: bytes, original_filename: str) -> str:
-        pass
-
-    @abstractmethod
-    async def save_text_file(self, content: str, candidate_id: str) -> str:
-        pass
-
-    @abstractmethod
-    async def save_evidence_file(self, content: str, candidate_id: str) -> str:
-        pass
-
-    @abstractmethod
-    async def read_file(self, uri: str) -> bytes:
-        pass
-
-    @abstractmethod
-    async def read_text_file(self, uri: str) -> str:
-        pass
-
-    @abstractmethod
-    async def delete_file(self, uri: str) -> bool:
-        pass
-
-
-class LocalStorageService(BaseStorageService):
+class StorageService:
     """Local file storage service for documents and extracted content."""
 
     def __init__(self):
@@ -120,73 +91,6 @@ class LocalStorageService(BaseStorageService):
         return self.base_path / uri
 
 
-class GCSStorageService(BaseStorageService):
-    """Google Cloud Storage service for documents and extracted content."""
-
-    def __init__(self):
-        from google.cloud import storage
-        self.client = storage.Client()
-        self.bucket_name = settings.gcs_bucket
-        self.bucket = self.client.bucket(self.bucket_name)
-
-    def _generate_filename(self, original_filename: str) -> str:
-        """Generate a unique filename while preserving extension."""
-        ext = Path(original_filename).suffix
-        return f"{uuid.uuid4()}{ext}"
-
-    async def save_raw_file(self, content: bytes, original_filename: str) -> str:
-        """Save an uploaded raw file and return its URI."""
-        filename = self._generate_filename(original_filename)
-        blob_name = f"raw/{filename}"
-        blob = self.bucket.blob(blob_name)
-        blob.upload_from_string(content)
-        return blob_name
-
-    async def save_text_file(self, content: str, candidate_id: str) -> str:
-        """Save extracted text content and return its URI."""
-        filename = f"{candidate_id}_{uuid.uuid4()}.txt"
-        blob_name = f"text/{filename}"
-        blob = self.bucket.blob(blob_name)
-        blob.upload_from_string(content, content_type="text/plain; charset=utf-8")
-        return blob_name
-
-    async def save_evidence_file(self, content: str, candidate_id: str) -> str:
-        """Save evidence JSON and return its URI."""
-        filename = f"{candidate_id}_{uuid.uuid4()}.json"
-        blob_name = f"evidence/{filename}"
-        blob = self.bucket.blob(blob_name)
-        blob.upload_from_string(content, content_type="application/json")
-        return blob_name
-
-    async def read_file(self, uri: str) -> bytes:
-        """Read a file by its URI."""
-        blob = self.bucket.blob(uri)
-        if not blob.exists():
-            raise FileNotFoundError(f"File not found: {uri}")
-        return blob.download_as_bytes()
-
-    async def read_text_file(self, uri: str) -> str:
-        """Read a text file by its URI."""
-        blob = self.bucket.blob(uri)
-        if not blob.exists():
-            raise FileNotFoundError(f"File not found: {uri}")
-        return blob.download_as_text()
-
-    async def delete_file(self, uri: str) -> bool:
-        """Delete a file by its URI."""
-        blob = self.bucket.blob(uri)
-        if blob.exists():
-            blob.delete()
-            return True
-        return False
-
-
-# Alias for backwards compatibility
-StorageService = LocalStorageService
-
-
-def get_storage() -> BaseStorageService:
-    """Dependency that provides the storage service based on environment."""
-    if settings.gcs_bucket:
-        return GCSStorageService()
-    return LocalStorageService()
+def get_storage() -> StorageService:
+    """Dependency that provides the storage service."""
+    return StorageService()
