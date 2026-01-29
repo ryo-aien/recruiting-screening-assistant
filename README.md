@@ -159,16 +159,16 @@ make migrate
 
 | サービス | URL |
 |---------|-----|
-| Frontend | http://localhost:3000 |
-| Backend API | http://localhost:8000 |
-| API Docs | http://localhost:8000/docs |
+| Frontend | https://app.example.com |
+| Backend API | https://api.example.com |
+| API Docs | https://api.example.com/docs |
 
 ### 基本的なワークフロー
 
 #### 1. 求人を作成
 
 ```bash
-curl -X POST http://localhost:8000/jobs \
+curl -X POST https://api.example.com/jobs \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Pythonエンジニア",
@@ -176,18 +176,18 @@ curl -X POST http://localhost:8000/jobs \
   }'
 ```
 
-または、Frontend (http://localhost:3000/jobs) から「新規求人作成」
+または、Frontend (https://app.example.com/jobs) から「新規求人作成」
 
 #### 2. 応募者を登録して書類をアップロード
 
 ```bash
 # 応募者作成
-curl -X POST http://localhost:8000/jobs/{job_id}/candidates \
+curl -X POST https://api.example.com/jobs/{job_id}/candidates \
   -H "Content-Type: application/json" \
   -d '{"display_name": "山田太郎"}'
 
 # 書類アップロード
-curl -X POST http://localhost:8000/candidates/{candidate_id}/documents \
+curl -X POST https://api.example.com/candidates/{candidate_id}/documents \
   -F "file=@resume.pdf" \
   -F "type=resume"
 ```
@@ -224,10 +224,10 @@ make logs-worker
 
 ```bash
 # 応募者一覧（スコア順）
-curl http://localhost:8000/jobs/{job_id}/candidates
+curl https://api.example.com/jobs/{job_id}/candidates
 
 # 応募者詳細（スコア内訳、根拠、説明）
-curl http://localhost:8000/candidates/{candidate_id}
+curl https://api.example.com/candidates/{candidate_id}
 ```
 
 または、Frontend で確認
@@ -235,7 +235,7 @@ curl http://localhost:8000/candidates/{candidate_id}
 #### 5. 意思決定を登録
 
 ```bash
-curl -X POST http://localhost:8000/candidates/{candidate_id}/decision \
+curl -X POST https://api.example.com/candidates/{candidate_id}/decision \
   -H "Content-Type: application/json" \
   -d '{
     "decision": "pass",
@@ -272,10 +272,10 @@ TotalFit = round((w_must×MustScore + w_nice×NiceScore + w_year×YearScore + w_
 
 ### スコア設定の変更
 
-Frontend (http://localhost:3000/admin/score-config) または API で変更可能：
+Frontend (https://app.example.com/admin/score-config) または API で変更可能：
 
 ```bash
-curl -X POST http://localhost:8000/admin/score-config \
+curl -X POST https://api.example.com/admin/score-config \
   -H "Content-Type: application/json" \
   -d '{
     "weights": {"must": 0.5, "nice": 0.2, "year": 0.15, "role": 0.15},
